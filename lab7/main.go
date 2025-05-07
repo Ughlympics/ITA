@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"bufio"
 	"lab7/problem"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -39,25 +40,30 @@ func main() {
 	// 	outFile.WriteString(line + "\n")
 	// }
 
-	data, err := os.ReadFile("input2.dat")
-	if err != nil {
-		panic(err)
+	file, _ := os.Open("input2.dat")
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	text := scanner.Text()
+
+	scanner.Scan()
+	n, _ := strconv.Atoi(scanner.Text())
+
+	var patterns []string
+	for i := 0; i < n; i++ {
+		scanner.Scan()
+		patterns = append(patterns, scanner.Text())
 	}
-	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
 
-	text := lines[0]
-	patternCount := problem.ParseInt(lines[1])
-	patterns := lines[2 : 2+patternCount]
+	matcher := problem.NewPatternMatcher(patterns)
+	result := matcher.FindMatches(text)
 
-	indices := problem.MatchPatternsInText(text, patterns)
-
-	var output []string
-	for _, idx := range indices {
-		output = append(output, fmt.Sprintf("%d", idx))
+	outputFile, _ := os.Create("output2.dat")
+	defer outputFile.Close()
+	output := make([]string, len(result))
+	for i, val := range result {
+		output[i] = strconv.Itoa(val)
 	}
-
-	err = os.WriteFile("output2.dat", []byte(strings.Join(output, " ")), 0644)
-	if err != nil {
-		panic(err)
-	}
+	outputFile.WriteString(strings.Join(output, " ") + "\n")
 }
